@@ -10,5 +10,8 @@
   },
   "devDependencies": {
     "vite": "^7.2.7"
+  },
+  "dependencies": {
+    "@larrym/lz-string": "^1.0.0"
   }
 }
