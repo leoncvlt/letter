@@ -1,24 +1,41 @@
-import './style.css'
-import javascriptLogo from './javascript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.js'
+import "./style.css"
 
-document.querySelector('#app').innerHTML = `
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">
-      <img src="${javascriptLogo}" class="logo vanilla" alt="JavaScript logo" />
-    </a>
-    <h1>Hello Vite!</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite logo to learn more
-    </p>
-  </div>
-`
+const envelope = document.querySelector(".envelope");
+const letter = document.querySelector(".letter");
 
-setupCounter(document.querySelector('#counter'))
+const wait = async (millis) => new Promise((resolve) => setTimeout(resolve, millis))
+
+// const animate = async (element, keyframes, options) => {
+//   const animation = element.animate(keyframes, options);
+//   animation.finished.then(())
+// }
+
+envelope.addEventListener("click", async (event) => {
+  envelope.style.pointerEvents = "none";
+  envelope.setAttribute("data-flipped", null);
+  await wait(500);
+  // return;
+  envelope.setAttribute("data-open", null);
+  await wait(500);
+  const letterOutAnimation = letter.animate([
+    { transform: "translateY(-110%)" },
+  ], {
+    duration: 500,
+    easing: "ease-out",
+    fill: "forwards"
+  });
+  await letterOutAnimation.finished;
+  envelope.parentNode.appendChild(letter)
+  envelope.setAttribute("data-hidden", null);
+  envelope.removeAttribute("data-open");
+  await wait(200);
+  const letterInAnimation = letter.animate([
+    { transform: "translateY(0)", aspectRatio: 0.7070, overflow: "auto" },
+  ], {
+    duration: 500,
+    easing: "ease-in-out",
+    fill: "forwards"
+  });
+  await letterInAnimation.finished;
+
+})
