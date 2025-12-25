@@ -110,6 +110,7 @@ main {
         background-size: contain;
         background-position: center;
         background-repeat: no-repeat;
+        border-radius: 2px;
         left: 4px;
         top: 4px;
         width: calc(100% - 8px);

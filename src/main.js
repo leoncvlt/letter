@@ -1,4 +1,4 @@
-import { compressToBase64, decompressFromBase64 } from "@larrym/lz-string";
+import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from "@larrym/lz-string";
 
 import "./style.css"
 
@@ -29,29 +29,22 @@ const emojiToBase64 = (emoji, size = 64) => {
 const defaultParams = {
   tt: "For you",
   sc: "orange",
-  se: encodeURI("💕"),
-  tx: "DIewTgpgtgBAlgBwM4FdYBMQBtwyXAFxgEMoICAaGAYxADskJqDyUwT1E4lq46BzGBCyEAdDACSdFvwjssTAiiQwySpFWIiAjilIkYLLFmUw6TKlmLgI5eMWooRK8L3EAFMMQiNpNEFBQIJhm3FhmELoQ4gAi9EwkOnqwciAqVo5I4lIyciTUeMT8hATcMJg4YFQ8wnLcUTBOVlC0YAh5PgTiAKpECE4AbnzE7I5gqCoAZsLcmkRgABb0mUJIfYPD7MRdMAByTcSrROZRVLQCKBB4hCRqeMq8CDd8VOjETwBGpg4wuqTZ0ggsnYLCg/RUpTovHQKD8f1g5gKCHABFKBHA4gAyhB0DBJsQULwvlMZio7JVoPlHFAkMQ6NUbqQ7Od+JdVMQkLSYAMRnBlLF4gV0WBhTBgnAQFQeWA+SofgMnP0CNsrkNlRAqMiRWjcGrvOU4P8gA=="
+  se: "💕",
+  tx: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam sit amet scelerisque nisl. Pellentesque urna mauris, accumsan eleifend ante quis, fringilla luctus felis. Quisque faucibus ut arcu pulvinar egestas. Etiam gravida risus at massa facilisis, id porttitor eros maximus. Nam blandit arcu eget magna gravida, id euismod tellus consectetur. Morbi ipsum diam, scelerisque eget vehicula id, molestie ut nunc. Sed molestie interdum odio, ullamcorper blandit arcu pretium vitae."
 };
 
-const url = new URL(window.location.href);
-const params = new URLSearchParams(url.search);
-for (const key in defaultParams) {
-  if (!params.has(key)) {
-    params.set(key, defaultParams[key]);
-  }
-}
-url.search = params.toString();
-window.history.replaceState({}, "", url.toString());
+const hash = window.location.hash.slice(1);
+const hashParams = JSON.parse(decompressFromEncodedURIComponent(hash));
+const params = { ...defaultParams, ...hashParams};
+window.location.hash = compressToEncodedURIComponent(JSON.stringify(params));
 
-const getParam = (param) => params.get(param) || defaultParams[param];
-
-const title = getParam("tt");
-const stampColor = getParam("sc");
-const stampEmoji = decodeURI(getParam("se"));
-const text = getParam("tx");
+const title = params.tt;
+const stampColor = params.sc;
+const stampEmoji = params.se;
+const text = params.tx;
 
 envelopeTitle.textContent = title;
-letterText.textContent = decompressFromBase64(text);
+letterText.textContent = text;
 envelope.style.setProperty("--stamp-color", stampColor);
 envelope.style.setProperty("--stamp", `url(${(emojiToBase64(stampEmoji))})`);
 
@@ -65,15 +58,15 @@ let maxRotation = 16;
 
 container.addEventListener("click", async (event) => {
   container.style.pointerEvents = "none";
+  container.blur();
+
   envelope.setAttribute("data-flipped", null);
   await wait(500);
 
   envelope.setAttribute("data-open", null);
   await wait(500);
 
-  const letterOutAnimation = letter.animate([
-    { transform: "translateY(-110%)" },
-  ], animationOptions);
+  const letterOutAnimation = letter.animate([{ transform: "translateY(-110%)" }], animationOptions);
   await letterOutAnimation.finished;
 
   envelope.parentNode.appendChild(letter)
@@ -83,14 +76,11 @@ container.addEventListener("click", async (event) => {
   envelope.removeAttribute("data-open");
   await wait(200);
 
-  const letterInAnimation = letter.animate([
-    { transform: "translateY(0)" },
-  ], animationOptions);
+  const letterInAnimation = letter.animate([{ transform: "translateY(0)" }], animationOptions);
   letter.classList.add("out");
   await letterInAnimation.finished;
 
   letter.style.overflow = "auto";
-
 })
 
 let usingAccelerometer = false;
@@ -98,9 +88,9 @@ let usingAccelerometer = false;
 const handleOrientation = (e) => {
   usingAccelerometer = !!e.alpha && !!e.beta && !!e.gamma;
   const beta = (e.beta - 45);
-  const gamma = e.gamma;
-  const rotateX = Math.max(-maxRotation, Math.min(maxRotation, beta / 3));
-  const rotateY = Math.max(-maxRotation, Math.min(maxRotation, gamma / 3));
+  const gamma = -e.gamma;
+  const rotateX = Math.max(-maxRotation, Math.min(maxRotation, beta / 4));
+  const rotateY = Math.max(-maxRotation, Math.min(maxRotation, gamma / 4));
   container.style.setProperty("--rotate-x", `${rotateX}deg`);
   container.style.setProperty("--rotate-y", `${rotateY}deg`);
 }
