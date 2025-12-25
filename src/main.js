@@ -43,7 +43,7 @@ for (const key in defaultParams) {
 url.search = params.toString();
 window.history.replaceState({}, "", url.toString());
 
-const getParam = (param) => params.get(param) ||  defaultParams[param];
+const getParam = (param) => params.get(param) || defaultParams[param];
 
 const title = getParam("tt");
 const stampColor = getParam("sc");
@@ -93,7 +93,44 @@ container.addEventListener("click", async (event) => {
 
 })
 
+let usingAccelerometer = false;
+
+const handleOrientation = (e) => {
+  usingAccelerometer = !!e.alpha && !!e.beta && !!e.gamma;
+  const beta = (e.beta - 45);
+  const gamma = e.gamma;
+  const rotateX = Math.max(-maxRotation, Math.min(maxRotation, beta / 3));
+  const rotateY = Math.max(-maxRotation, Math.min(maxRotation, gamma / 3));
+  container.style.setProperty("--rotate-x", `${rotateX}deg`);
+  container.style.setProperty("--rotate-y", `${rotateY}deg`);
+}
+
+const requestOrientationPermission = () => {
+  if (typeof DeviceOrientationEvent !== 'undefined' &&
+    typeof DeviceOrientationEvent.requestPermission === 'function') {
+    DeviceOrientationEvent.requestPermission()
+      .then(permissionState => {
+        if (permissionState === 'granted') {
+          window.addEventListener('deviceorientation', handleOrientation);
+          info.textContent = 'Tilt your device to interact';
+        }
+      })
+      .catch(console.error);
+  } else {
+    window.addEventListener('deviceorientation', handleOrientation);
+  }
+}
+
+if (window.DeviceOrientationEvent) {
+  if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+    document.addEventListener("click", requestOrientationPermission, { once: true });
+  } else {
+    requestOrientationPermission();
+  }
+}
+
 document.addEventListener("mousemove", (e) => {
+  if (usingAccelerometer) return;
   const x = e.clientX / window.innerWidth;
   const y = e.clientY / window.innerHeight;
   const rotateY = (x - 0.5) * 2 * maxRotation;
@@ -103,6 +140,7 @@ document.addEventListener("mousemove", (e) => {
 });
 
 document.addEventListener("mouseleave", () => {
+  if (usingAccelerometer) return;
   container.style.setProperty("--rotate-x", `0deg`);
   container.style.setProperty("--rotate-y", `0deg`);
 });
