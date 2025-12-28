@@ -8,6 +8,9 @@ const letter = document.querySelector(".letter");
 const envelopeTitle = envelope.querySelector(".title");
 const letterText = letter.querySelector(".text");
 
+let maxRotation = 16;
+let usingAccelerometer = false;
+
 const wait = async (millis) => new Promise((resolve) => setTimeout(resolve, millis))
 
 const emojiToBase64 = (emoji, size = 64) => {
@@ -54,16 +57,11 @@ const animationOptions = {
   fill: "forwards"
 };
 
-let maxRotation = 16;
-
 container.addEventListener("click", async (event) => {
-  container.style.pointerEvents = "none";
-  container.blur();
-
-  envelope.setAttribute("data-flipped", null);
+  container.classList.add("flip");
   await wait(500);
 
-  envelope.setAttribute("data-open", null);
+  container.classList.add("open");
   await wait(500);
 
   const letterOutAnimation = letter.animate([{ transform: "translateY(-110%)" }], animationOptions);
@@ -72,25 +70,23 @@ container.addEventListener("click", async (event) => {
   envelope.parentNode.appendChild(letter)
   maxRotation = 2;
 
-  envelope.setAttribute("data-hidden", null);
-  envelope.removeAttribute("data-open");
+  container.classList.add("hidden");
+  container.classList.remove("open");
   await wait(200);
 
   const letterInAnimation = letter.animate([{ transform: "translateY(0)" }], animationOptions);
-  letter.classList.add("out");
+  letter.classList.add("open");
   await letterInAnimation.finished;
 
   letter.style.overflow = "auto";
 })
 
-let usingAccelerometer = false;
-
 const handleOrientation = (e) => {
   usingAccelerometer = !!e.alpha && !!e.beta && !!e.gamma;
   const beta = (e.beta - 45);
   const gamma = -e.gamma;
-  const rotateX = Math.max(-maxRotation, Math.min(maxRotation, beta / 4));
-  const rotateY = Math.max(-maxRotation, Math.min(maxRotation, gamma / 4));
+  const rotateX = Math.max(-maxRotation, Math.min(maxRotation, beta / 2));
+  const rotateY = Math.max(-maxRotation, Math.min(maxRotation, gamma / 2));
   container.style.setProperty("--rotate-x", `${rotateX}deg`);
   container.style.setProperty("--rotate-y", `${rotateY}deg`);
 }
