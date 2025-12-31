@@ -23,7 +23,29 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-direction: column;
   perspective: 1000px;
+  overflow: hidden;
+}
+
+.editor {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  width: 100%;
+  max-width: 32rem;
+  gap: 1rem;
+
+  textarea,
+  input {
+    width: 100%;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    resize: none;
+  }
 }
 
 .container {
@@ -31,6 +53,7 @@ main {
   --rotate-x: 0;
   --rotate-y: 0;
 
+  flex: 1;
   cursor: pointer;
   position: relative;
   width: 100%;
@@ -39,9 +62,16 @@ main {
   align-items: center;
   justify-content: center;
   margin: 1rem;
-  transition: transform 200ms ease-out;
+  transition: transform 500ms ease-out;
   transform-style: preserve-3d;
   transform: rotateX(var(--rotate-x)) rotateY(var(--rotate-y)) scale(var(--scale));
+
+  * {
+    font-family: "Edu SA Beginner", cursive;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-style: normal;
+  }
 
   &:not(.flip):hover {
     --scale: 1.05;
@@ -78,7 +108,6 @@ main {
     .front,
     .back {
       backface-visibility: hidden;
-
     }
 
     .front {
@@ -89,6 +118,7 @@ main {
       height: 100%;
       z-index: 10;
       transform: rotateY(180deg);
+      font-size: larger;
 
       .stamp {
         position: absolute;
@@ -143,8 +173,8 @@ main {
   }
 
   &.hidden .envelope {
-    transform: scale(0.75);
-    filter: brightness(0.8);
+    transform: scale(0.8);
+    filter: brightness(0.9);
   }
 
   &.open .flap {
@@ -169,11 +199,6 @@ main {
     transition: all 1000ms ease-in-out;
     overflow: hidden;
 
-    &.open {
-      box-shadow: inset 0 0 10px rgba(84, 55, 55, 0.25), 0 20px 60px rgba(0, 0, 0, 0.3);
-      aspect-ratio: 0.7070;
-    }
-
     .text {
       padding: 1rem;
       margin: 0;
@@ -181,6 +206,13 @@ main {
       top: 0;
       width: 100%;
       height: 100%;
+      font-size: larger;
+      overflow: hidden;
+    }
+
+    &.open {
+      box-shadow: inset 0 0 10px rgba(84, 55, 55, 0.25), 0 20px 60px rgba(0, 0, 0, 0.3);
+      aspect-ratio: 0.7070;
     }
   }
 }

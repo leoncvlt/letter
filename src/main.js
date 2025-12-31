@@ -1,15 +1,66 @@
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from "@larrym/lz-string";
 
-import "./style.css"
+import "./style.css";
+import "./font.css";
 
+const editor = document.querySelector(".editor");
 const container = document.querySelector(".container");
 const envelope = document.querySelector(".envelope");
 const letter = document.querySelector(".letter");
-const envelopeTitle = envelope.querySelector(".title");
-const letterText = letter.querySelector(".text");
 
 let maxRotation = 16;
 let usingAccelerometer = false;
+
+const debounce = (callback, delay) => {
+  let timeoutId;
+  return function (...args) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => callback.apply(this, args), delay);
+  };
+}
+
+const defaultParams = {
+  tt: "For you",
+  sc: "antiquewhite",
+  se: "💘",
+  tx: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam sit amet scelerisque nisl. Pellentesque urna mauris, accumsan eleifend ante quis, fringilla luctus felis. Quisque faucibus ut arcu pulvinar egestas. Etiam gravida risus at massa facilisis, id porttitor eros maximus. Nam blandit arcu eget magna gravida, id euismod tellus consectetur. Morbi ipsum diam, scelerisque eget vehicula id, molestie ut nunc. Sed molestie interdum odio, ullamcorper blandit arcu pretium vitae."
+};
+
+const hash = window.location.hash.slice(1);
+const hashParams = JSON.parse(decompressFromEncodedURIComponent(hash));
+const params = { ...defaultParams, ...hashParams };
+for (const [key, value] of Object.entries(params)) {
+  try {
+    document.querySelector(`[data-field='${key}'`).value = value;
+    document.querySelector(`[data-target='${key}'`).textContent = value;
+  } catch (error) { }
+}
+
+const update = (event) => {
+  if (event?.target) {
+    const param = event.target.dataset.field;
+    const value = event.target.value;
+    console.log(param, value)
+    if (param && value) {
+      params[param] = value;
+      try {
+        document.querySelector(`[data-target='${param}'`).textContent = value;
+      } catch (error) { }
+    }
+  }
+  window.location.hash = compressToEncodedURIComponent(JSON.stringify(params));
+}
+
+update();
+
+if (location.pathname === "/letter/") {
+  editor.remove();
+} else {
+  document.getElementById("textarea-front").addEventListener("input", debounce(update, 500))
+  document.getElementById("textarea-letter").addEventListener("input", debounce(update, 500))
+  document.getElementById("button-preview").addEventListener("click", () => window.open("https://" + window.location.host + "/letter/" + window.location.hash))
+  container.style.pointerEvents = "none";
+}
 
 const wait = async (millis) => new Promise((resolve) => setTimeout(resolve, millis))
 
@@ -29,25 +80,9 @@ const emojiToBase64 = (emoji, size = 64) => {
   return dataURL;
 }
 
-const defaultParams = {
-  tt: "For you",
-  sc: "orange",
-  se: "💕",
-  tx: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam sit amet scelerisque nisl. Pellentesque urna mauris, accumsan eleifend ante quis, fringilla luctus felis. Quisque faucibus ut arcu pulvinar egestas. Etiam gravida risus at massa facilisis, id porttitor eros maximus. Nam blandit arcu eget magna gravida, id euismod tellus consectetur. Morbi ipsum diam, scelerisque eget vehicula id, molestie ut nunc. Sed molestie interdum odio, ullamcorper blandit arcu pretium vitae."
-};
-
-const hash = window.location.hash.slice(1);
-const hashParams = JSON.parse(decompressFromEncodedURIComponent(hash));
-const params = { ...defaultParams, ...hashParams};
-window.location.hash = compressToEncodedURIComponent(JSON.stringify(params));
-
-const title = params.tt;
 const stampColor = params.sc;
 const stampEmoji = params.se;
-const text = params.tx;
 
-envelopeTitle.textContent = title;
-letterText.textContent = text;
 envelope.style.setProperty("--stamp-color", stampColor);
 envelope.style.setProperty("--stamp", `url(${(emojiToBase64(stampEmoji))})`);
 
@@ -77,8 +112,6 @@ container.addEventListener("click", async (event) => {
   const letterInAnimation = letter.animate([{ transform: "translateY(0)" }], animationOptions);
   letter.classList.add("open");
   await letterInAnimation.finished;
-
-  letter.style.overflow = "auto";
 })
 
 const handleOrientation = (e) => {
