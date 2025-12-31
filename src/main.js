@@ -92,7 +92,7 @@ const animationOptions = {
   fill: "forwards"
 };
 
-container.addEventListener("click", async (event) => {
+envelope.addEventListener("click", async (event) => {
   container.classList.add("flip");
   await wait(500);
 

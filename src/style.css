@@ -55,7 +55,6 @@ main {
   --rotate-y: 0;
 
   flex: 1;
-  cursor: pointer;
   position: relative;
   width: 100%;
   max-width: 32rem;
@@ -92,8 +91,7 @@ main {
     position: relative;
     transform: rotateY(180deg);
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    pointer-events: none;
-
+    cursor: grab;
 
     .front,
     .back,
