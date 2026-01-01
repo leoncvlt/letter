@@ -23,12 +23,16 @@ const defaultParams = {
   tt: "For you",
   sc: "antiquewhite",
   se: "🍕",
-  tx: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam sit amet scelerisque nisl. Pellentesque urna mauris, accumsan eleifend ante quis, fringilla luctus felis. Quisque faucibus ut arcu pulvinar egestas. Etiam gravida risus at massa facilisis, id porttitor eros maximus. Nam blandit arcu eget magna gravida, id euismod tellus consectetur. Morbi ipsum diam, scelerisque eget vehicula id, molestie ut nunc. Sed molestie interdum odio, ullamcorper blandit arcu pretium vitae."
+  tx: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam sit amet scelerisque nisl. Pellentesque urna mauris, accumsan eleifend ante quis, fringilla luctus felis. Quisque faucibus ut arcu pulvinar egestas. Etiam gravida risus at massa facilisis, id porttitor eros maximus. Nam blandit arcu eget magna gravida, id euismod tellus consectetur. Morbi ipsum diam, scelerisque eget vehicula id, molestie ut nunc. Sed molestie interdum odio, ullamcorper blandit arcu pretium vitae.",
 };
 
-const hash = window.location.hash.slice(1);
+const data = window.location.hash.slice(1);
+const editing = !data.startsWith("@");
+const hash = editing ? data : data.slice(1);
 const hashParams = JSON.parse(decompressFromEncodedURIComponent(hash));
 const params = { ...defaultParams, ...hashParams };
+console.log({...params, editing})
+
 for (const [key, value] of Object.entries(params)) {
   try {
     document.querySelector(`[data-field='${key}'`).value = value;
@@ -48,19 +52,18 @@ const update = (event) => {
       } catch (error) { }
     }
   }
-  window.location.hash = compressToEncodedURIComponent(JSON.stringify(params));
+  window.location.hash = (editing ? "" : "@") + compressToEncodedURIComponent(JSON.stringify(params));
 }
 
 update();
 
-const searchParams = new URLSearchParams(window.location.href)
-if (searchParams.has("read")) {
+if (!editing) {
   editor.remove();
 } else {
   document.getElementById("textarea-front").addEventListener("input", debounce(update, 500))
   document.getElementById("textarea-letter").addEventListener("input", debounce(update, 500))
-  document.getElementById("button-preview").addEventListener("click", () => window.open("https://" + window.location.host + "/&read=" + window.location.hash))
-  wrapper.style.pointerEvents = "none";
+  document.getElementById("button-preview").addEventListener("click", () => window.open("/#@" + window.location.hash.slice(1)))
+  envelope.style.pointerEvents = "none";
 }
 
 const wait = async (millis) => new Promise((resolve) => setTimeout(resolve, millis))
