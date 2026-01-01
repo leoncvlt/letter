@@ -62,7 +62,7 @@ if (!editing) {
 } else {
   document.getElementById("textarea-front").addEventListener("input", debounce(update, 500))
   document.getElementById("textarea-letter").addEventListener("input", debounce(update, 500))
-  document.getElementById("button-preview").addEventListener("click", () => window.open("/#@" + window.location.hash.slice(1)))
+  document.getElementById("button-preview").addEventListener("click", () => window.open(window.location.pathname + "#@" + window.location.hash.slice(1)))
   envelope.style.pointerEvents = "none";
 }
 
