@@ -4,7 +4,7 @@ import "./style.css";
 import "./font.css";
 
 const editor = document.querySelector(".editor");
-const container = document.querySelector(".container");
+const wrapper = document.querySelector(".wrapper");
 const envelope = document.querySelector(".envelope");
 const letter = document.querySelector(".letter");
 
@@ -22,7 +22,7 @@ const debounce = (callback, delay) => {
 const defaultParams = {
   tt: "For you",
   sc: "antiquewhite",
-  se: "💘",
+  se: "🍕",
   tx: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam sit amet scelerisque nisl. Pellentesque urna mauris, accumsan eleifend ante quis, fringilla luctus felis. Quisque faucibus ut arcu pulvinar egestas. Etiam gravida risus at massa facilisis, id porttitor eros maximus. Nam blandit arcu eget magna gravida, id euismod tellus consectetur. Morbi ipsum diam, scelerisque eget vehicula id, molestie ut nunc. Sed molestie interdum odio, ullamcorper blandit arcu pretium vitae."
 };
 
@@ -53,13 +53,14 @@ const update = (event) => {
 
 update();
 
-if (location.pathname === "/letter/") {
+const searchParams = new URLSearchParams(window.location.href)
+if (searchParams.has("read")) {
   editor.remove();
 } else {
   document.getElementById("textarea-front").addEventListener("input", debounce(update, 500))
   document.getElementById("textarea-letter").addEventListener("input", debounce(update, 500))
-  document.getElementById("button-preview").addEventListener("click", () => window.open("https://" + window.location.host + "/letter/" + window.location.hash))
-  container.style.pointerEvents = "none";
+  document.getElementById("button-preview").addEventListener("click", () => window.open("https://" + window.location.host + "/&read=" + window.location.hash))
+  wrapper.style.pointerEvents = "none";
 }
 
 const wait = async (millis) => new Promise((resolve) => setTimeout(resolve, millis))
@@ -80,11 +81,9 @@ const emojiToBase64 = (emoji, size = 64) => {
   return dataURL;
 }
 
-const stampColor = params.sc;
-const stampEmoji = params.se;
-
-envelope.style.setProperty("--stamp-color", stampColor);
-envelope.style.setProperty("--stamp", `url(${(emojiToBase64(stampEmoji))})`);
+//TODO: customize
+envelope.style.setProperty("--stamp-color", params.sc);
+envelope.style.setProperty("--stamp", `url(${(emojiToBase64(params.se))})`);
 
 const animationOptions = {
   duration: 500,
@@ -92,21 +91,25 @@ const animationOptions = {
   fill: "forwards"
 };
 
+window.addEventListener("load", () => {
+  envelope.classList.add("ready");
+});
+
 envelope.addEventListener("click", async (event) => {
-  container.classList.add("flip");
+  envelope.classList.add("flip");
   await wait(500);
 
-  container.classList.add("open");
+  envelope.classList.add("open");
   await wait(500);
 
   const letterOutAnimation = letter.animate([{ transform: "translateY(-110%)" }], animationOptions);
   await letterOutAnimation.finished;
 
-  envelope.parentNode.appendChild(letter)
+  wrapper.appendChild(letter);
   maxRotation = 2;
 
-  container.classList.add("hidden");
-  container.classList.remove("open");
+  envelope.classList.add("hidden");
+  envelope.classList.remove("open");
   await wait(200);
 
   const letterInAnimation = letter.animate([{ transform: "translateY(0)" }], animationOptions);
@@ -120,8 +123,8 @@ const handleOrientation = (e) => {
   const gamma = -e.gamma;
   const rotateX = Math.max(-maxRotation, Math.min(maxRotation, beta / 2));
   const rotateY = Math.max(-maxRotation, Math.min(maxRotation, gamma / 2));
-  container.style.setProperty("--rotate-x", `${rotateX}deg`);
-  container.style.setProperty("--rotate-y", `${rotateY}deg`);
+  wrapper.style.setProperty("--rotate-x", `${rotateX}deg`);
+  wrapper.style.setProperty("--rotate-y", `${rotateY}deg`);
 }
 
 const requestOrientationPermission = () => {
@@ -154,12 +157,12 @@ document.addEventListener("mousemove", (e) => {
   const y = e.clientY / window.innerHeight;
   const rotateY = (x - 0.5) * 2 * maxRotation;
   const rotateX = (y - 0.5) * -2 * maxRotation;
-  container.style.setProperty("--rotate-x", `${rotateX}deg`);
-  container.style.setProperty("--rotate-y", `${rotateY}deg`);
+  wrapper.style.setProperty("--rotate-x", `${rotateX}deg`);
+  wrapper.style.setProperty("--rotate-y", `${rotateY}deg`);
 });
 
 document.addEventListener("mouseleave", () => {
   if (usingAccelerometer) return;
-  container.style.setProperty("--rotate-x", `0deg`);
-  container.style.setProperty("--rotate-y", `0deg`);
+  wrapper.style.setProperty("--rotate-x", `0deg`);
+  wrapper.style.setProperty("--rotate-y", `0deg`);
 });

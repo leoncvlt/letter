@@ -49,8 +49,7 @@ main {
   }
 }
 
-.container {
-  --scale: 1;
+.wrapper {
   --rotate-x: 0;
   --rotate-y: 0;
 
@@ -63,7 +62,8 @@ main {
   justify-content: center;
   transition: transform 500ms ease-out;
   transform-style: preserve-3d;
-  transform: rotateX(var(--rotate-x)) rotateY(var(--rotate-y)) scale(var(--scale));
+  transform: rotateX(var(--rotate-x)) rotateY(var(--rotate-y));
+  pointer-events: none;
 
   * {
     font-family: "Edu SA Beginner", cursive;
@@ -72,26 +72,33 @@ main {
     font-style: normal;
   }
 
-  &:not(.flip):hover {
-    --scale: 1.05;
-  }
-
-  &:not(.flip):active {
-    --scale: 1;
-  }
-
   .envelope {
+    --scale: 1;
     --color: rgb(254, 216, 193);
     --stamp-color: orangered;
 
+    pointer-events: all;
     width: 100%;
     aspect-ratio: 2;
     background-color: hsl(from var(--color) h s calc(l + 10));
     transform-style: preserve-3d;
     position: relative;
-    transform: rotateY(180deg);
+    transform: rotateY(180deg) scale(var(--scale));
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    cursor: grab;
+    
+    &:hover {
+      cursor: grab;
+      --scale: 1.05;
+    }
+  
+    &:active {
+      cursor: grabbing;
+      --scale: 1;
+    }
+
+    &.ready {
+      transition: transform 500ms ease;
+    }
 
     .front,
     .back,
@@ -159,63 +166,58 @@ main {
       transition: all 500ms ease;
       z-index: 4;
     }
-  }
 
-  &.flip {
-    pointer-events: none;
-
-    .envelope {
-      transition: all 500ms ease;
+    &.flip {
       transform: rotateY(0deg);
+      pointer-events: none;
+    }
+
+    &.hidden {
+      transform: scale(0.8);
+      filter: brightness(0.9);
+    }
+  
+    &.open .flap {
+      background-color: hsl(from var(--color) h s calc(l + 5));
+      transform: scaleY(-100%);
+      z-index: 0;
+    }
+  
+    &.open .back,
+    &.hidden .back {
+      clip-path: polygon(0 0, 50% 50%, 100% 0, 100% 100%, 0 100%);
     }
   }
+}
 
-  &.hidden .envelope {
-    transform: scale(0.8);
-    filter: brightness(0.9);
-  }
+.letter {
+  position: absolute;
+  width: 100%;
+  max-width: 32rem;
+  transform-origin: left top;
+  aspect-ratio: 2;
+  background: repeating-linear-gradient(rgba(245, 245, 245, 1) 0%, rgba(255, 255, 255, 1) 33.4%);
+  z-index: 0;
+  transition: all 1000ms ease-in-out;
+  overflow: hidden;
 
-  &.open .flap {
-    background-color: hsl(from var(--color) h s calc(l + 5));
-    transform: scaleY(-100%);
-    z-index: 0;
-  }
-
-  &.open .back,
-  &.hidden .back {
-    clip-path: polygon(0 0, 50% 50%, 100% 0, 100% 100%, 0 100%);
-  }
-
-  .letter {
+  .text {
+    padding: 1rem;
+    margin: 0;
     position: absolute;
+    top: 0;
     width: 100%;
-    max-width: 32rem;
-    transform-origin: left top;
-    aspect-ratio: 2;
-    background: repeating-linear-gradient(rgba(245, 245, 245, 1) 0%, rgba(255, 255, 255, 1) 33.4%);
-    z-index: 0;
-    transition: all 1000ms ease-in-out;
+    height: 100%;
+    font-size: larger;
     overflow: hidden;
+  }
+
+  &.open {
+    box-shadow: inset 0 0 10px rgba(84, 55, 55, 0.25), 0 20px 60px rgba(0, 0, 0, 0.3);
+    aspect-ratio: 0.7070;
 
     .text {
-      padding: 1rem;
-      margin: 0;
-      position: absolute;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      font-size: larger;
-      overflow: hidden;
-    }
-
-    &.open {
-      box-shadow: inset 0 0 10px rgba(84, 55, 55, 0.25), 0 20px 60px rgba(0, 0, 0, 0.3);
-      aspect-ratio: 0.7070;
-     
-      .text {
-        overflow: auto;
-        pointer-events: auto
-      }
+      overflow: auto;
     }
   }
 }
